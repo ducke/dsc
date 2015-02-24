@@ -51,7 +51,7 @@ class DscProvider < Chef::Provider
     native_resource['Properties'].each { |property_data| @property_map.store(property_data['Name'].downcase, property_data) }
 
     @normalized_properties = get_normalized_properties!
-    @resource_converged = ! run_configuration(:test)
+    #@resource_converged = ! run_configuration(:test)
   end
 
   def whyrun_supported?
@@ -138,11 +138,11 @@ EOH
   end
 
   def property_code
-    properties = @normalized_properties.map { |name, value| 
+    properties = @normalized_properties.map { |name, value|
       value_code = translate_type(value)
       "        #{name} = #{value_code}"
     }
-    
+
     properties.join("\n")
   end
 
@@ -162,7 +162,7 @@ EOH
     translated_value
   end
 
-  def run_powershell(config_directory, code) 
+  def run_powershell(config_directory, code)
     cmdlet = PowershellCmdlet.new("#{code}")
     cmdlet.run
   end
@@ -180,7 +180,7 @@ EOH
     else
       raise ArgumentError, "#{command.to_s} is not a valid configuration command"
     end
-    
+
     config_directory = Dir.mktmpdir("dsc-script")
     generate_configuration config_directory
 
@@ -206,19 +206,19 @@ EOH
     #
     # What if: [SEA-ADAMED1]: LCM:  [ Start  Set      ]  [[Group]chef_dsc]
     # What if: [SEA-ADAMED1]:                            [[Group]chef_dsc] Performing the operation "Add" on target "Group: demo1"
-    # 
+    #
     # The second line lacking the 'LCM:' is what happens if there is a change require to make the system consistent with the resource.
     # Such a line without LCM is only present if an update to the system is required. Therefore, we test each line below
     # to see if it is missing the LCM, and declare that an update is needed if so.
     has_change_line = false
-    
+
     what_if_output.lines.each do |line|
       if (line =~ /.+\:\s+\[\S*\]\:\s+LCM\:/).nil?
         has_change_line = true
         break
       end
     end
-    
+
     has_change_line
   end
 end
